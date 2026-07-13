@@ -57,6 +57,7 @@
                 <th>Turf Name</th>
                 <th>Starts At</th>
                 <th>Ends At</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody>
@@ -66,6 +67,11 @@
                 <td th:text="${booking.turfName}"></td>
                 <td th:text="${#temporals.format(booking.startTime, 'yyyy-MM-dd HH:mm')}"></td>
                 <td th:text="${#temporals.format(booking.endTime, 'yyyy-MM-dd HH:mm')}"></td>
+                <td>
+                    <form th:action="@{/bookings/delete/{id}(id=${booking.id})}" method="post" style="margin: 0;">
+                        <button type="submit" style="background-color: #e74c3c; padding: 5px 10px; font-size: 14px;">Cancel</button>
+                    </form>
+                </td>
             </tr>
         </tbody>
     </table>
