@@ -7,6 +7,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
     
     <style>
         :root {
@@ -251,11 +253,11 @@
                 </div>
                 <div class="form-group">
                     <label>Start Match Time</label>
-                    <input type="datetime-local" th:field="*{startTime}" required />
+                    <input type="text" id="startTimePicker" th:field="*{startTime}" placeholder="Select Date & Time" required />
                 </div>
                 <div class="form-group">
                     <label>End Match Time</label>
-                    <input type="datetime-local" th:field="*{endTime}" required />
+                    <input type="text" id="endTimePicker" th:field="*{endTime}" placeholder="Select Date & Time" required />
                 </div>
                 <button type="submit" class="btn-primary">Secure Slot</button>
             </form>
@@ -300,6 +302,20 @@
         </div>
     </div>
 </div>
-
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        const config = {
+        enableTime: true,
+        altInput: true,                  // Creates a pretty, human-readable layout for the user
+        altFormat: "Y-m-d H:i",         // What the user sees: 2026-07-14 14:30
+        dateFormat: "Y-m-d\\TH:i:S",     // What Java sees: 2026-07-14T14:30:00 (ISO Standard)
+        minDate: "today",
+        time_24hr: true,
+        minuteIncrement: 15
+    };
+     // Bind the selectors to our input fields
+        flatpickr("#startTimePicker", config);
+        flatpickr("#endTimePicker", config);
+    </script>
 </body>
 </html>
