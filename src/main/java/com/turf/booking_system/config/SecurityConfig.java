@@ -19,34 +19,37 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // 1. Disable CSRF for simple REST API testing (re-enable in production with tokens)
+            // 1. Disable CSRF for simple testing
             .csrf(csrf -> csrf.disable())
             
             // 2. Define the authorization rules
             .authorizeHttpRequests(auth -> auth
-                // Allow anyone to view slots or make a booking (Guest access)
+                // FIXED: Explicitly allow anyone to access the main HTML dashboard path!
+                .requestMatchers("/bookings").permitAll()
+                
+                // Allow anyone to use guest REST APIs
                 .requestMatchers(HttpMethod.GET, "/api/v1/bookings/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/bookings/**").permitAll()
                 
                 // RESTRICT deletion strictly to users with the ADMIN role
                 .requestMatchers(HttpMethod.DELETE, "/api/v1/bookings/**").hasRole("ADMIN")
+                .requestMatchers("/bookings/delete/**").hasRole("ADMIN")
                 
-                // Any other requests not explicitly mentioned must be authenticated
+                // Any other requests must be authenticated
                 .anyRequest().authenticated()
             )
             
-            // 3. Use standard HTTP Basic authentication for the Admin login
-            .httpBasic(Customizer.withDefaults());
+            // FIXED: Swapped .httpBasic() for .formLogin() so the browser shows a clean interface
+            .formLogin(Customizer.withDefaults());
 
         return http.build();
     }
 
-    // 4. Create a temporary hardcoded Admin user to test your system
+    // 4. Temporary hardcoded Admin user
     @Bean
     public UserDetailsService userDetailsService() {
         UserDetails admin = User.builder()
             .username("admin")
-            // {noop} tells Spring it's a plain-text password for local testing development
             .password("{noop}admin123") 
             .roles("ADMIN")
             .build();

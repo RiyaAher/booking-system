@@ -285,7 +285,7 @@
                             <td th:text="${#temporals.format(booking.endTime, 'yyyy-MM-dd HH:mm')}"></td>
                             <td>
                                 <form th:action="@{/bookings/delete/{id}(id=${booking.id})}" method="post" style="margin: 0;">
-                                    <button type="submit" class="btn-danger">Cancel</button>
+                                    <button type="button" onclick="alert('🚫 Unauthorized: To cancel a secured slot, please contact the pitch owner directly at support@turfarena.com.');" class="btn-danger">Cancel</button>
                                 </form>
                             </td>
                         </tr>
