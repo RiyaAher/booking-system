@@ -25,11 +25,11 @@ public class SecurityConfig {
             // 2. Define the authorization rules
             .authorizeHttpRequests(auth -> auth
                 // Allow anyone to view slots or make a booking (Guest access)
-                .requestMatchers(HttpMethod.GET, "/api/bookings/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/bookings/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/bookings/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/bookings/**").permitAll()
                 
                 // RESTRICT deletion strictly to users with the ADMIN role
-                .requestMatchers(HttpMethod.DELETE, "/api/bookings/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/bookings/**").hasRole("ADMIN")
                 
                 // Any other requests not explicitly mentioned must be authenticated
                 .anyRequest().authenticated()
