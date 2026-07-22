@@ -56,7 +56,7 @@ public class TurfWebController {
 
     //Delete a booking
     @PostMapping("/delete/{id}")
-    public String deleteBooking(@PathVariable("id") Long id, RedirectAttributes redirectAttrs){
+    public String deleteBooking(@PathVariable("id") long id, RedirectAttributes redirectAttrs){
         // 2. Check if the booking actually exists before trying to delete it
          if (bookingRepository.existsById(id)) {
          bookingRepository.deleteById(id);
