@@ -3,7 +3,6 @@ package com.turf.booking_system.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.User;
@@ -44,7 +43,11 @@ public class SecurityConfig {
             
             //form login takes the user to the homepage
             .formLogin(form -> form
-                .defaultSuccessUrl("/", true)
+                .defaultSuccessUrl("/bookings", true) // Takes Admin straight to dashboard after login!
+                .permitAll()
+            )
+                .logout(logout -> logout
+                .logoutSuccessUrl("/bookings") // Takes back to dashboard on logout
                 .permitAll()
             );
 

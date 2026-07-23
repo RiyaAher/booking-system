@@ -79,6 +79,12 @@
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-ollama-spring-boot-starter</artifactId>
         </dependency>
+
+        <!--Thymleaf Extras (Security to check auth)-->
+        <dependency>
+            <groupId>org.thymeleaf.extras</groupId>
+            <artifactId>thymeleaf-extras-springsecurity6</artifactId>
+        </dependency>
     </dependencies>
 
     <!-- Required for Spring AI milestone dependencies -->

@@ -225,9 +225,31 @@
 <body>
 
 <div class="dashboard">
-    <header>
-        <h1><i class="fa-solid fa-cloud-sun"></i>Turf Arena</h1>
-        <p>Live Pitch Allocation & Booking Dashboard</p>
+    <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+        <div style="text-align: left;">
+            <h1><i class="fa-solid fa-cloud-sun"></i>Turf Arena</h1>
+            <p>Live Pitch Allocation & Booking Dashboard</p>
+        </div>
+
+        <!-- Admin Status / Login Link -->
+        <div>
+            <!-- Shown if user is NOT logged in -->
+            <div th:unless="${#authorization.expression('isAuthenticated()')}">
+                <a href="/login" class="btn-primary" style="text-decoration: none; padding: 8px 16px; font-size: 0.9rem;">
+                    <i class="fa-solid fa-user-shield"></i> Admin Login
+                </a>
+            </div>
+
+            <!-- Shown if user IS logged in as Admin -->
+            <div th:if="${#authorization.expression('isAuthenticated()')}" style="display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 0.9rem; font-weight: 600; color: var(--primary);">
+                    <i class="fa-solid fa-user-check"></i> Admin Active
+                </span>
+                <a href="/logout" class="btn-danger" style="text-decoration: none; padding: 6px 12px; font-size: 0.85rem;">
+                    Logout
+                </a>
+            </div>
+        </div>
     </header>
 
     <!-- Global System Notifications -->
@@ -284,9 +306,23 @@
                             <td th:text="${#temporals.format(booking.startTime, 'yyyy-MM-dd HH:mm')}"></td>
                             <td th:text="${#temporals.format(booking.endTime, 'yyyy-MM-dd HH:mm')}"></td>
                             <td>
-                                <form th:action="@{/bookings/delete/{id}(id=${booking.id})}" method="post" style="margin: 0;">
-                                    <button type="button" onclick="alert('🚫 Unauthorized: To cancel a secured slot, please contact the pitch owner directly at support@turfarena.com.');" class="btn-danger">Cancel</button>
-                                </form>
+                                <!-- 1. IF ADMIN: Show functional Delete button -->
+                                <div th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
+                                    <form th:action="@{'/bookings/delete/' + ${booking.id}}" method="post" style="margin: 0;">
+                                        <button type="submit" 
+                                                class="btn-danger" 
+                                                onclick="return confirm('Are you sure you want to cancel this booking?');">
+                                            Cancel
+                                        </button>
+                                    </form>
+                                </div>
+
+                                <!-- 2. IF GUEST: Show locked status -->
+                                <div th:unless="${#authorization.expression('hasRole(''ADMIN'')')}">
+                                    <span style="font-size: 0.8rem; color: var(--text-muted); font-style: italic;">
+                                        <i class="fa-solid fa-lock"></i> Admin Only
+                                    </span>
+                                </div>
                             </td>
                         </tr>
                         <!-- Fallback empty state handling -->
@@ -302,20 +338,21 @@
         </div>
     </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script>
-        const config = {
+<script>
+    const config = {
         enableTime: true,
-        altInput: true,                  // Creates a pretty, human-readable layout for the user
-        altFormat: "Y-m-d H:i",         // What the user sees: 2026-07-14 14:30
-        dateFormat: "Y-m-d\\TH:i:S",     // What Java sees: 2026-07-14T14:30:00 (ISO Standard)
+        altInput: true,                  // Pretty, human-readable layout
+        altFormat: "Y-m-d H:i",         // What user sees: 2026-07-14 14:30
+        dateFormat: "Y-m-d\\TH:i:S",     // What Java sees: ISO Standard
         minDate: "today",
         time_24hr: true,
         minuteIncrement: 15
     };
-     // Bind the selectors to our input fields
-        flatpickr("#startTimePicker", config);
-        flatpickr("#endTimePicker", config);
-    </script>
+    // Bind selectors to input fields
+    flatpickr("#startTimePicker", config);
+    flatpickr("#endTimePicker", config);
+</script>
 </body>
 </html>
