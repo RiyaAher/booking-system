@@ -22,9 +22,12 @@ public class SecurityConfig {
             // 1. Disable CSRF for simple testing
             .csrf(csrf -> csrf.disable())
             
-            // 2. Define the authorization rules
+            // 2. Define authorization rules
             .authorizeHttpRequests(auth -> auth
-                // FIXED: Explicitly allow anyone to access the main HTML dashboard path!
+                // Allow public access to Homepage, root path, and static resources (CSS, JS, images)
+                .requestMatchers("/", "/index", "/index.html", "/css/**", "/js/**", "/images/**").permitAll()
+
+                // Allow public access to the main dashboard path
                 .requestMatchers("/bookings").permitAll()
                 
                 // Allow anyone to use guest REST APIs
@@ -39,8 +42,11 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
             
-            // FIXED: Swapped .httpBasic() for .formLogin() so the browser shows a clean interface
-            .formLogin(Customizer.withDefaults());
+            //form login takes the user to the homepage
+            .formLogin(form -> form
+                .defaultSuccessUrl("/", true)
+                .permitAll()
+            );
 
         return http.build();
     }
