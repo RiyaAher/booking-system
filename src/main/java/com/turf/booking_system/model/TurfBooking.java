@@ -33,6 +33,10 @@ public class TurfBooking {
     @Column(name = "end_time", nullable = false)
     private LocalDateTime endTime;
 
+    // NEW COLUMN: Stores the calculated booking cost
+    @Column(name = "total_price")
+    private Double totalPrice;
+
     // --- CRUCIAL: Empty constructor required by Hibernate to boot up ---
     public TurfBooking() {}
 
@@ -50,4 +54,8 @@ public class TurfBooking {
 
     public LocalDateTime getEndTime() { return endTime; }
     public void setEndTime(LocalDateTime endTime) { this.endTime = endTime; }
+
+    // Getter and Setter for totalPrice
+    public Double getTotalPrice() { return totalPrice; }
+    public void setTotalPrice(Double totalPrice) { this.totalPrice = totalPrice; }
 }
