@@ -27,7 +27,8 @@ public class SecurityConfig {
                 .requestMatchers("/", "/index", "/index.html", "/css/**", "/js/**", "/images/**").permitAll()
 
                 // Allow public access to the main dashboard path
-                .requestMatchers("/bookings").permitAll()
+                .requestMatchers(HttpMethod.GET,"/bookings", "/bookings/chat").permitAll()
+                .requestMatchers(HttpMethod.POST,"/bookings/chat", "/bookings/chat/**", "/bookings").permitAll()
                 
                 // Allow anyone to use guest REST APIs
                 .requestMatchers(HttpMethod.GET, "/api/v1/bookings/**").permitAll()
