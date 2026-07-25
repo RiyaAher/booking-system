@@ -10,11 +10,13 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.turf.booking_system.model.TurfBooking;
 import com.turf.booking_system.repository.TurfBookingRepository;
-import com.turf.booking_system.service.PricingService; // 1. Added Import
+import com.turf.booking_system.service.PricingService;
+import com.turf.booking_system.service.TurfAiService;
 
 //We use @Controller (not @RestController) because we want to serve a web page
 @Controller
@@ -25,7 +27,10 @@ public class TurfWebController {
     private TurfBookingRepository bookingRepository;
 
     @Autowired
-    private PricingService pricingService; // 2. Injected PricingService
+    private PricingService pricingService;
+
+    @Autowired
+    private TurfAiService turfAiService;
 
     //Load the page and inject data variables into our HTML file
     @GetMapping
@@ -62,6 +67,15 @@ public class TurfWebController {
         // D. Save it and redirect with a success banner showing the calculated total!
         bookingRepository.save(booking);
         redirectAttrs.addFlashAttribute("success", "✅ SUCCESS: Booking secured! Total Price: $" + calculatedPrice);
+        return "redirect:/bookings";
+    }
+    @PostMapping("/chat")
+    public String handleAiChat(@RequestParam("userMessage") String userMessage, RedirectAttributes redirectAttrs) {
+        if (userMessage != null && !userMessage.trim().isEmpty()) {
+            String aiReply = turfAiService.askAi(userMessage);
+            redirectAttrs.addFlashAttribute("chatQuestion", userMessage);
+            redirectAttrs.addFlashAttribute("chatReply", aiReply);
+        }
         return "redirect:/bookings";
     }
 

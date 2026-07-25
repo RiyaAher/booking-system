@@ -260,6 +260,27 @@
         <i class="fa-solid fa-circle-check"></i> <span th:text="${success}"></span>
     </div>
 
+    <!-- AI Assistant Card -->
+    <div class="card" style="margin-bottom: 32px; background: #f0fdf4; border: 1px solid #bbf7d0;">
+      <h2><i class="fa-solid fa-robot" style="color: var(--primary);"></i> AI Pitch Concierge</h2>
+     
+      <!-- Display previous Q&A if present -->
+      <div th:if="${chatReply}" style="background: white; padding: 16px; border-radius: 10px; margin-bottom: 16px; border: 1px solid var(--border);">
+         <p style="margin: 0 0 8px 0; font-weight: 600; color: var(--dark);">
+             <i class="fa-solid fa-user"></i> You: <span th:text="${chatQuestion}" style="font-weight: 400;"></span>
+         </p>
+         <p style="margin: 0; color: var(--primary-hover); font-weight: 500;">
+             <i class="fa-solid fa-bot"></i> AI: <span th:text="${chatReply}" style="font-weight: 400; color: var(--text-main);"></span>
+         </p>
+      </div>
+
+      <!-- Chat Form -->
+     <form th:action="@{/bookings/chat}" method="post" style="display: flex; gap: 12px;">
+         <input type="text" name="userMessage" placeholder="Ask AI: 'How much for 2 hours this Saturday?'" required style="flex: 1;" />
+         <button type="submit" class="btn-primary" style="width: auto; padding: 0 24px;">Ask AI</button>
+     </form>
+    </div>
+
     <div class="grid">
         <!-- Column 1: Entry Placement Form -->
         <div class="card">
