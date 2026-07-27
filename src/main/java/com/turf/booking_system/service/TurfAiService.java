@@ -1,36 +1,54 @@
 package com.turf.booking_system.service;
 
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.document.Document;
+import org.springframework.ai.vectorstore.SearchRequest;
+import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class TurfAiService {
 
     private final ChatClient chatClient;
+    private final VectorStore vectorStore;
 
-    public TurfAiService(ChatClient.Builder chatClientBuilder) {
+    public TurfAiService(ChatClient.Builder chatClientBuilder, VectorStore vectorStore) {
         this.chatClient = chatClientBuilder.build();
+        this.vectorStore = vectorStore;
     }
 
     public String askAi(String userMessage) {
         try {
+            // 1. Fetch relevant policy snippets from VectorStore
+            List<Document> similarDocuments = vectorStore.similaritySearch(
+                SearchRequest.query(userMessage).withTopK(2));
+
+            String policyContext = similarDocuments.stream()
+                    .map(doc -> doc.getContent())
+                    .collect(Collectors.joining("\n---\n"));
+
             String currentContext = LocalDateTime.now().format(
                 DateTimeFormatter.ofPattern("EEEE, yyyy-MM-dd HH:mm")
             );
 
+            // 2. Pass context + function tools to Ollama
             return this.chatClient.prompt()
                 .system("""
                     You are the AI Concierge for Turf Arena.
                     Current reference date and time is: %s.
                     
-                    When users mention dates/times naturally (like "next Saturday", "tomorrow at 4pm", "coming Sunday 10am"):
-                    1. Calculate the exact ISO-8601 date-time string relative to the current reference date (%s).
-                    2. If duration/end time is not specified, default to 1 hour after the start time.
-                    3. Always pass the calculated ISO dates (yyyy-MM-ddTHH:mm:ss) to the tools.
-                    """.formatted(currentContext, currentContext))
+                    RELEVANT TURF POLICIES & INFORMATION:
+                    %s
+                    
+                    INSTRUCTIONS:
+                    1. Use the policy context above to answer rules, amenities, footwear, or cancellation questions.
+                    2. Use availability and price tools when users ask to check booking slots or price calculations.
+                    """.formatted(currentContext, policyContext))
                 .user(userMessage)
                 .functions("checkAvailabilityTool", "calculatePriceTool")
                 .call()
