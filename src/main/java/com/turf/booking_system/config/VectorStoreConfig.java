@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -21,22 +22,31 @@ public class VectorStoreConfig {
     @Value("classpath:turf-rules.txt")
     private Resource rulesFile;
 
-@Bean
-public VectorStore vectorStore(EmbeddingModel embeddingModel) {
-    SimpleVectorStore vectorStore = new SimpleVectorStore(embeddingModel);
-    
-    // Auto-close input streams when reading completes
-    try (BufferedReader reader = new BufferedReader(
-            new InputStreamReader(rulesFile.getInputStream(), StandardCharsets.UTF_8))) {
-            
-        String content = reader.lines().collect(Collectors.joining("\n"));
+    @Bean
+    public VectorStore vectorStore(EmbeddingModel embeddingModel) {
+        SimpleVectorStore vectorStore = new SimpleVectorStore(embeddingModel);
+        File vectorFile = new File("vector-store.json");
 
-        Document doc = new Document(content);
-        vectorStore.add(List.of(doc));
-    } catch (Exception e) {
-        e.printStackTrace();
+        if (vectorFile.exists()) {
+            // Load existing embeddings instantly from JSON without hitting Ollama!
+            vectorStore.load(vectorFile);
+        } else {
+            // Auto-close input streams when reading completes
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(rulesFile.getInputStream(), StandardCharsets.UTF_8))) {
+                
+                String content = reader.lines().collect(Collectors.joining("\n"));
+
+                Document doc = new Document(content);
+                vectorStore.add(List.of(doc));
+                
+                // Save embeddings to a local JSON file for future restarts
+                vectorStore.save(vectorFile);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        return vectorStore;
     }
-
-    return vectorStore;
-  }
 }
