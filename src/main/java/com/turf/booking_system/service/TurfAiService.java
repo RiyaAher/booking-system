@@ -1,5 +1,10 @@
 package com.turf.booking_system.service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
@@ -7,11 +12,6 @@ import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class TurfAiService {
@@ -54,11 +54,13 @@ public class TurfAiService {
                     
                     RELEVANT TURF POLICIES & RULES:
                     %s
-                    
-                    STRICT RULES:
-                    1. Answer questions about footwear, rules, amenities, and policies ONLY using the RELEVANT TURF POLICIES & RULES section above.
-                    2. If the answer is directly stated in the policies above, do NOT invoke any availability or pricing tools.
-                    3. Only invoke 'checkAvailabilityTool' or 'calculatePriceTool' if the user explicitly asks to check booking availability, time slots, or calculate price.
+
+                    CRITICAL TOOL & DATE INSTRUCTIONS:
+                    1. When invoking tools, ALWAYS convert relative days (like "tomorrow", "this Sunday", "next Friday") into exact ISO-8601 string format: 'YYYY-MM-DDTHH:mm:ss' (e.g., '2026-08-02T10:00:00').
+                    2. If the user specifies a duration (e.g., "2 hours on Sunday") but NO specific start time, default the start time to 10:00 AM (10:00:00) on that day.
+                    3. For footwear, cancellation, or rules questions, rely directly on the RELEVANT TURF POLICIES text above.
+                    4. For pricing or availability calculations, ALWAYS invoke the appropriate function tool.
+                    5. Default the turfName parameter to 'Main Turf' if not specified by the user.
                     """.formatted(currentContext, policyContext))
                 .user(userMessage)
                 .functions("checkAvailabilityTool", "calculatePriceTool")
