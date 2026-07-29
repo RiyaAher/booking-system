@@ -153,6 +153,48 @@
         button.btn-primary:hover { background-color: var(--primary-hover); }
         button.btn-primary:active { transform: scale(0.98); }
 
+        /* Quick Suggestions Chips Styling */
+        .quick-prompts-container {
+            margin-bottom: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .quick-prompts-label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 0.02em;
+        }
+
+        .quick-prompts-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .chip-btn {
+            background-color: #ffffff;
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 0.82rem;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        }
+
+        .chip-btn:hover {
+            background-color: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+            transform: translateY(-1px);
+        }
+
         /* Clean Table Layout */
         .table-container {
             overflow-x: auto;
@@ -274,9 +316,25 @@
          </p>
       </div>
 
+      <!-- Quick Suggestions Chips Section -->
+      <div class="quick-prompts-container">
+          <span class="quick-prompts-label">Suggested Questions:</span>
+          <div class="quick-prompts-buttons">
+              <button type="button" class="chip-btn" onclick="sendQuickPrompt('Check availability for tomorrow 5pm')">
+                  📅 Check Court 1 availability tomorrow
+              </button>
+              <button type="button" class="chip-btn" onclick="sendQuickPrompt('What is your cancellation and refund policy?')">
+                  📜 Cancellation & refund policy
+              </button>
+              <button type="button" class="chip-btn" onclick="sendQuickPrompt('What shoes can I wear, and how much is 2 hours on Sunday?')">
+                  👟 Footwear rules & Sunday pricing
+              </button>
+          </div>
+      </div>
+
       <!-- Chat Form -->
-     <form th:action="@{/bookings/chat}" method="post" style="display: flex; gap: 12px;">
-         <input type="text" name="userMessage" placeholder="Ask AI: 'How much for 2 hours this Saturday?'" required style="flex: 1;" />
+     <form id="chatForm" th:action="@{/bookings/chat}" method="post" style="display: flex; gap: 12px;">
+         <input type="text" id="userMessageInput" name="userMessage" placeholder="Ask AI: 'How much for 2 hours this Saturday?'" required style="flex: 1;" />
          <button type="submit" class="btn-primary" style="width: auto; padding: 0 24px;">Ask AI</button>
      </form>
     </div>
@@ -374,6 +432,16 @@
     // Bind selectors to input fields
     flatpickr("#startTimePicker", config);
     flatpickr("#endTimePicker", config);
+
+    // Quick Suggestions Chip Handler
+    function sendQuickPrompt(promptText) {
+        const inputField = document.getElementById('userMessageInput');
+        const form = document.getElementById('chatForm');
+        if (inputField && form) {
+            inputField.value = promptText;
+            form.submit();
+        }
+    }
 </script>
-</body>
+</body> 
 </html>
