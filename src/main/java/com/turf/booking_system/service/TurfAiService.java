@@ -8,9 +8,12 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,8 +24,13 @@ public class TurfAiService {
     private final ChatClient chatClient;
     private final VectorStore vectorStore;
 
-    public TurfAiService(ChatClient.Builder chatClientBuilder, VectorStore vectorStore) {
-        this.chatClient = chatClientBuilder.build();
+    // Explicitly inject openAiChatModel (Groq) so Render finds the correct bean
+    public TurfAiService(
+            ChatClient.Builder chatClientBuilder, 
+            @Qualifier("openAiChatModel") ChatModel chatModel,
+            @Autowired(required = false) VectorStore vectorStore) {
+        
+        this.chatClient = ChatClient.builder(chatModel).build();
         this.vectorStore = vectorStore;
     }
 
@@ -30,14 +38,21 @@ public class TurfAiService {
         try {
             log.info("--> [USER QUERY]: {}", userMessage);
 
-            // 1. Fetch relevant policy snippets from VectorStore
-            List<Document> similarDocuments = vectorStore.similaritySearch(
-                SearchRequest.query(userMessage).withTopK(3)
-            );
+            // 1. Safely fetch policy snippets from VectorStore (if available)
+            String policyContext = "";
+            if (vectorStore != null) {
+                try {
+                    List<Document> similarDocuments = vectorStore.similaritySearch(
+                        SearchRequest.query(userMessage).withTopK(3)
+                    );
 
-            String policyContext = similarDocuments.stream()
-                    .map(doc -> doc.getContent())
-                    .collect(Collectors.joining("\n---\n"));
+                    policyContext = similarDocuments.stream()
+                            .map(doc -> doc.getContent())
+                            .collect(Collectors.joining("\n---\n"));
+                } catch (Exception ve) {
+                    log.warn("VectorStore search failed or bypassed: {}", ve.getMessage());
+                }
+            }
 
             log.info("--> [RAG CONTEXT RETRIEVED]:\n{}", 
                 policyContext.isEmpty() ? "NO MATCHING CONTEXT FOUND" : policyContext);
@@ -46,7 +61,7 @@ public class TurfAiService {
                 DateTimeFormatter.ofPattern("EEEE, yyyy-MM-dd HH:mm")
             );
 
-            // 2. Pass context + function tools to Ollama
+            // 2. Pass context + tools to Groq AI
             String response = this.chatClient.prompt()
                 .system("""
                     You are the official AI Concierge for Turf Arena.
