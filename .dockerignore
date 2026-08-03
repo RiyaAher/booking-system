@@ -1,0 +1,9 @@
+.git
+.github
+.vscode
+.idea
+*.iml
+README.md
+HELP.md
+Dockerfile*
+*.log
