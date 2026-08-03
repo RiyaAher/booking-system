@@ -23,31 +23,30 @@ public class SecurityConfig {
             
             // 2. Define authorization rules
             .authorizeHttpRequests(auth -> auth
-                // Allow public access to Homepage, root path, and static resources (CSS, JS, images)
-                .requestMatchers("/", "/index", "/index.html", "/css/**", "/js/**", "/images/**").permitAll()
+                // Allow public access to Homepage, root path, and static resources
+                .requestMatchers("/", "/index", "/index.html", "/css/**", "/js/**", "/images/**", "/static/**", "/favicon.ico").permitAll()
 
-                // Allow public access to the main dashboard path
-                .requestMatchers(HttpMethod.GET,"/bookings", "/bookings/chat").permitAll()
-                .requestMatchers(HttpMethod.POST,"/bookings/chat", "/bookings/chat/**", "/bookings").permitAll()
+                // Allow ALL HTTP Methods (GET, POST, OPTIONS) for Chat & AI Endpoints
+                .requestMatchers("/bookings/chat", "/bookings/chat/**", "/chat/**", "/api/chat/**").permitAll()
                 
-                // Allow anyone to use guest REST APIs
-                .requestMatchers(HttpMethod.GET, "/api/v1/bookings/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/v1/bookings/**").permitAll()
+                // Allow public access to main dashboard paths & APIs
+                .requestMatchers("/bookings", "/bookings/").permitAll()
+                .requestMatchers("/api/v1/bookings/**").permitAll()
                 
                 // RESTRICT deletion strictly to users with the ADMIN role
                 .requestMatchers(HttpMethod.DELETE, "/api/v1/bookings/**").hasRole("ADMIN")
                 .requestMatchers("/bookings/delete/**").hasRole("ADMIN")
                 
-                // Any other requests must be authenticated
+                // Any other requests (like Admin Dashboard pages) must be authenticated
                 .anyRequest().authenticated()
             )
             
-            //form login takes the user to the homepage
+            // Form login settings
             .formLogin(form -> form
                 .defaultSuccessUrl("/bookings", true) // Takes Admin straight to dashboard after login!
                 .permitAll()
             )
-                .logout(logout -> logout
+            .logout(logout -> logout
                 .logoutSuccessUrl("/bookings") // Takes back to dashboard on logout
                 .permitAll()
             );
@@ -55,7 +54,7 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // 4. Temporary hardcoded Admin user
+    // Temporary hardcoded Admin user
     @Bean
     public UserDetailsService userDetailsService() {
         UserDetails admin = User.builder()
