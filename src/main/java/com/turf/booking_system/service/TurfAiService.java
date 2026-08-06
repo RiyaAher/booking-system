@@ -34,6 +34,7 @@ public class TurfAiService {
         this.vectorStore = vectorStore;
     }
 
+    @SuppressWarnings("CallToPrintStackTrace")
     public String askAi(String userMessage) {
         try {
             log.info("--> [USER QUERY]: {}", userMessage);
@@ -86,6 +87,10 @@ public class TurfAiService {
             return response;
 
         } catch (Exception e) {
+
+            System.err.println("===AI EXECUTION EXCEPTION===");
+            e.printStackTrace();
+
             log.error("--> [AI ERROR]: ", e);
             return "Sorry, I ran into an issue getting that information ☹️ Please try again!";
         }
