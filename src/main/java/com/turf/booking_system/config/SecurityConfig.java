@@ -18,13 +18,16 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // 1. Disable CSRF for simple testing
+            // 1. Disable CSRF for simple testing / API calls
             .csrf(csrf -> csrf.disable())
+
+            // 2. Allow frames so H2 Web Console works if accessed locally
+            .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
             
-            // 2. Define authorization rules
+            // 3. Define authorization rules
             .authorizeHttpRequests(auth -> auth
-                // Allow public access to Homepage, root path, and static resources
-                .requestMatchers("/", "/index", "/index.html", "/css/**", "/js/**", "/images/**", "/static/**", "/favicon.ico").permitAll()
+                // Allow public access to Homepage, root path, static resources, and H2 console
+                .requestMatchers("/", "/index", "/index.html", "/css/**", "/js/**", "/images/**", "/static/**", "/favicon.ico", "/h2-console/**").permitAll()
 
                 // Allow ALL HTTP Methods (GET, POST, OPTIONS) for Chat & AI Endpoints
                 .requestMatchers("/bookings/chat", "/bookings/chat/**", "/chat/**", "/api/chat/**").permitAll()

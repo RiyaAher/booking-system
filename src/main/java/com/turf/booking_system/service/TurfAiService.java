@@ -13,7 +13,6 @@ import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -24,13 +23,13 @@ public class TurfAiService {
     private final ChatClient chatClient;
     private final VectorStore vectorStore;
 
-    // Explicitly inject openAiChatModel (Groq) so Render finds the correct bean
+    // Spring Boot automatically injects the single ChatModel created by OpenAI starter (Groq)
     public TurfAiService(
-            ChatClient.Builder chatClientBuilder, 
-            @Qualifier("openAiChatModel") ChatModel chatModel,
+            ChatClient.Builder chatClientBuilder,
+            ChatModel chatModel,
             @Autowired(required = false) VectorStore vectorStore) {
         
-        this.chatClient = ChatClient.builder(chatModel).build();
+        this.chatClient = chatClientBuilder.build();
         this.vectorStore = vectorStore;
     }
 
@@ -39,7 +38,7 @@ public class TurfAiService {
         try {
             log.info("--> [USER QUERY]: {}", userMessage);
 
-            // 1. Safely fetch policy snippets from VectorStore (if available)
+            // 1. Safely fetch policy snippets from VectorStore (via ONNX local embeddings)
             String policyContext = "";
             if (vectorStore != null) {
                 try {
