@@ -1,8 +1,11 @@
-# Stage 1: Build stage (Java 21 JDK)
+# Stage 1: Build stage with capped Maven heap size
 FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /app
 
-# Copy dependency files first for Docker layer caching
+# Limit Maven's heap usage so it fits within Render's build limits
+ENV MAVEN_OPTS="-Xmx300m -XX:+UseSerialGC"
+
+# Copy dependency files first
 COPY pom.xml .
 COPY .mvn .mvn
 COPY mvnw .
@@ -11,21 +14,18 @@ RUN chmod +x mvnw
 # Download dependencies
 RUN ./mvnw dependency:go-offline -B
 
-# Copy source code and build final executable jar
+# Copy source code and build jar
 COPY src ./src
 RUN ./mvnw clean package -DskipTests
 
-# Stage 2: Runtime stage (Java 21 JRE)
+# Stage 2: Runtime stage
 FROM eclipse-temurin:21-jre
 WORKDIR /app
 
-# Copy built JAR from stage 1
 COPY --from=build /app/target/*.jar app.jar
 
-# Render injects the PORT environment variable at runtime
 ENV PORT=8080
 EXPOSE 8080
 
-# Configure JVM options for cloud container environments
-ENTRYPOINT ["sh", "-c", "java -Dserver.port=${PORT} -Xmx400m -jar app.jar"]
-
+# Tune JVM options for 512MB RAM container
+ENTRYPOINT ["sh", "-c", "java -Dserver.port=${PORT} -Xmx300m -Xms128m -XX:+UseSerialGC -jar app.jar"]
