@@ -1,5 +1,7 @@
 package com.turf.booking_system.ai;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.turf.booking_system.model.TurfBooking;
 import com.turf.booking_system.repository.TurfBookingRepository;
 import com.turf.booking_system.service.PricingService;
@@ -20,7 +22,6 @@ public class BookingTools {
     private final PricingService pricingService;
     private final TurfBookingRepository bookingRepository;
 
-    // Flexible ISO formatter that handles missing seconds or varying precision
     private static final DateTimeFormatter FLEXIBLE_FORMATTER = new DateTimeFormatterBuilder()
             .appendPattern("yyyy-MM-dd['T'][ ]HH:mm")
             .optionalStart().appendPattern(":ss").optionalEnd()
@@ -34,8 +35,11 @@ public class BookingTools {
 
     // --- 1. CALCULATE PRICE TOOL ---
     public record PriceRequest(
-        @Description("Start date-time in ISO format, e.g. 2026-07-25T14:00:00") String startTime,
-        @Description("End date-time in ISO format, e.g. 2026-07-25T16:00:00") String endTime
+        @JsonPropertyDescription("Start date-time in ISO format, e.g. 2026-08-07T14:00:00")
+        @JsonProperty(required = true) String startTime,
+
+        @JsonPropertyDescription("End date-time in ISO format, e.g. 2026-08-07T16:00:00")
+        @JsonProperty(required = true) String endTime
     ) {}
 
     public record PriceResponse(double totalPrice, double hourlyRate, String rateType) {}
@@ -54,7 +58,6 @@ public class BookingTools {
 
                 return new PriceResponse(total, rate, type);
             } catch (Exception e) {
-                // Return an error structure back to the LLM so it can politely inform the user
                 return new PriceResponse(0.0, 0.0, "Unable to calculate rate: invalid date format provided.");
             }
         };
@@ -62,9 +65,14 @@ public class BookingTools {
 
     // --- 2. CHECK AVAILABILITY TOOL ---
     public record AvailabilityRequest(
-        @Description("Pitch or turf name, e.g. 'Main Turf' or 'Turf A'") String turfName,
-        @Description("Start date-time in ISO format, e.g. 2026-07-25T14:00:00") String startTime,
-        @Description("End date-time in ISO format, e.g. 2026-07-25T16:00:00") String endTime
+        @JsonPropertyDescription("Pitch or turf name, e.g. Main Turf or Court 1")
+        @JsonProperty(required = true) String turfName,
+
+        @JsonPropertyDescription("Start date-time in ISO format, e.g. 2026-08-07T14:00:00")
+        @JsonProperty(required = true) String startTime,
+
+        @JsonPropertyDescription("End date-time in ISO format, e.g. 2026-08-07T16:00:00")
+        @JsonProperty(required = true) String endTime
     ) {}
 
     public record AvailabilityResponse(boolean available, String message) {}

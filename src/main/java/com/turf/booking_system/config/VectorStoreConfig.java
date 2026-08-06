@@ -28,7 +28,7 @@ public class VectorStoreConfig {
         File vectorFile = new File("vector-store.json");
 
         if (vectorFile.exists()) {
-            // Load existing embeddings instantly from JSON without hitting Ollama!
+            // Load existing local ONNX embeddings
             vectorStore.load(vectorFile);
         } else {
             // Auto-close input streams when reading completes
@@ -40,7 +40,7 @@ public class VectorStoreConfig {
                 Document doc = new Document(content);
                 vectorStore.add(List.of(doc));
                 
-                // Save embeddings to a local JSON file for future restarts
+                // Save new ONNX embeddings to local JSON
                 vectorStore.save(vectorFile);
             } catch (Exception e) {
                 e.printStackTrace();
