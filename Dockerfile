@@ -1,8 +1,8 @@
-# Stage 1: Build stage (using Debian-based JDK for ONNX C++ library compatibility)
-FROM maven:3.9.6-eclipse-temurin-17 AS build
+# Stage 1: Build stage (Java 21 JDK)
+FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /app
 
-# Copy dependency files first to leverage Docker layer caching
+# Copy dependency files first for Docker layer caching
 COPY pom.xml .
 COPY .mvn .mvn
 COPY mvnw .
@@ -15,8 +15,8 @@ RUN ./mvnw dependency:go-offline -B
 COPY src ./src
 RUN ./mvnw clean package -DskipTests
 
-# Stage 2: Runtime stage (Ubuntu/Debian based JRE to support ONNX native bindings)
-FROM eclipse-temurin:17-jre
+# Stage 2: Runtime stage (Java 21 JRE)
+FROM eclipse-temurin:21-jre
 WORKDIR /app
 
 # Copy built JAR from stage 1
@@ -28,3 +28,4 @@ EXPOSE 8080
 
 # Configure JVM options for cloud container environments
 ENTRYPOINT ["sh", "-c", "java -Dserver.port=${PORT} -Xmx400m -jar app.jar"]
+
